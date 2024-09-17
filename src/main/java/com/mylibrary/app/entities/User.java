@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,7 +30,7 @@ public class User implements UserDetails{
     private String password;
     @Email
     private String email;
-    @DBRef
+    @DocumentReference
     private Set<Role> roles;
     private boolean enabled;
     private String verified;
@@ -44,9 +44,9 @@ public class User implements UserDetails{
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities= new HashSet<>();
-        this.roles.forEach(role->{
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
-        });
+        this.roles.forEach(role->
+            authorities.add(new SimpleGrantedAuthority(role.getName().toString()))
+        );
         return authorities;
     }
 
@@ -59,5 +59,12 @@ public class User implements UserDetails{
     public String getUsername() {
         return this.username;
     }
+
+    // public void setRole(EnumRole eRoleole) {
+    //     Role role = new Role();
+    //     role.setName(eRoleole);
+    //     this.roles.add(role);
+    // }
+    
 
 }
