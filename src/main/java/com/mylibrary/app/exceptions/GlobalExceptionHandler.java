@@ -2,6 +2,8 @@ package com.mylibrary.app.exceptions;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +19,22 @@ import com.mylibrary.app.payloads.ApiResponse;
 public class GlobalExceptionHandler {
     // Form validation exceptions
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex){
-        Map<String, String> errors = new HashMap<>();
+    public ResponseEntity<Map<String, List<Map<String, String>>>> handleValidationExceptions(MethodArgumentNotValidException ex){
+        List<Map<String, String>> errorsList = new ArrayList<>();
 
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
             String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
+
+            Map<String, String> errorMessageMap = new HashMap<>();
+            errorMessageMap.put(fieldName, errorMessage);
+
+            errorsList.add(errorMessageMap);
         });
 
-        return new ResponseEntity<Map<String, String>>(errors, HttpStatus.UNPROCESSABLE_ENTITY);
+        Map<String, List<Map<String, String>>> errorsMap = new HashMap<>();
+        errorsMap.put("errors", errorsList);
+        return new ResponseEntity<Map<String, List<Map<String, String>>>>(errorsMap, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     // Resource not fond exceptions
