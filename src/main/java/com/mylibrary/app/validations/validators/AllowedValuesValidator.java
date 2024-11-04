@@ -2,7 +2,7 @@ package com.mylibrary.app.validations.validators;
 
 import com.mylibrary.app.validations.AllowedValues;
 
-import io.jsonwebtoken.lang.Arrays;
+import java.util.Arrays;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
@@ -11,7 +11,7 @@ public class AllowedValuesValidator implements ConstraintValidator<AllowedValues
     private Class<?> targetType;
     @Override
     public void initialize(AllowedValues allowedValues) {
-        // ConstraintValidator.super.initialize(allowedValues);
+        ConstraintValidator.super.initialize(allowedValues);
         this.allowedValues = allowedValues.value();
         this.targetType = allowedValues.targetType();
     }
@@ -24,8 +24,8 @@ public class AllowedValuesValidator implements ConstraintValidator<AllowedValues
 
         try {
             Object convertedValue = this.convertToTargetType(inputValue.toString(), this.targetType);
-            return Arrays.asList(this.allowedValues)
-            .contains(convertedValue);
+            return Arrays.stream(this.allowedValues)
+                    .anyMatch(allowed -> allowed.equals(String.valueOf(convertedValue)));
         } catch (Exception e) {
             return false;
         }

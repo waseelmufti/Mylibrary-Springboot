@@ -1,6 +1,7 @@
 package com.mylibrary.app.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mylibrary.app.entities.Author;
@@ -16,6 +17,11 @@ import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,10 +43,16 @@ public class AuthorController {
 
 
     @GetMapping("")
-    public ResponseEntity<List<AuthorDTO>> index() {
-        List<Author> authors = this.authorRepo.findAll();
-        List<AuthorDTO> authorDTOs = authors.stream().map((author) -> this.modelMapper.map(author, AuthorDTO.class)).collect(Collectors.toList());
-        return new ResponseEntity<List<AuthorDTO>>(authorDTOs, HttpStatus.OK);
+    public ResponseEntity<Page<AuthorDTO>> index(
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "10") int pageSize) {
+        Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("name"));
+        Page<Author> page = this.authorRepo.findAll(pageable);
+        List<AuthorDTO> authorDTOs = page.getContent().stream().map((author) -> this.modelMapper.map(author, AuthorDTO.class)).collect(Collectors.toList());
+        Page<AuthorDTO> authorDTOsPage = new PageImpl<>(authorDTOs, pageable, page.getTotalElements());
+
+        
+        return new ResponseEntity<Page<AuthorDTO>>(authorDTOsPage, HttpStatus.OK);
     }
     
     @PostMapping("")
